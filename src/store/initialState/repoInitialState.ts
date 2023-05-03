@@ -1,9 +1,12 @@
+import { issuesResponseType, todoStatus } from '../../types/reponseType/responseType';
 import { initialRepoType } from '../../types/store/reducersTypes/repoReducerTypes';
 
 const initialRepoState: initialRepoType = {
   repoUrl: '',
-  issues: [],
-  loading: false,
-  error: false,
+  issues: [
+    { todoStatus: todoStatus.DONE, issues: [] },
+    { todoStatus: todoStatus.IN_PROGRESS, issues: [] },
+    { todoStatus: todoStatus.TODO, issues: [] },
+  ],
 };
 export default initialRepoState;

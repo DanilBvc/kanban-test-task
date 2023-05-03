@@ -1,0 +1,13 @@
+.todo {
+  display: flex;
+  justify-content: space-between
+}
+
+.board {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  gap: 10px;
+  padding: 5px;
+  border: 1px solid black;
+}

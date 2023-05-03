@@ -1,8 +1,7 @@
-import { issuesResponseType } from '../../reponseType/responseType';
+import { issuesResponseType, todoStatus } from '../../reponseType/responseType';
 
+export type todoType = { todoStatus: todoStatus; issues: issuesResponseType[] };
 export type initialRepoType = {
   repoUrl: string;
-  issues: issuesResponseType[] | [];
-  loading: boolean;
-  error: boolean;
+  issues: todoType[];
 };

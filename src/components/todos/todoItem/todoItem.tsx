@@ -1,20 +1,24 @@
+/* eslint-disable camelcase */
 import {
   Card, CardContent, Typography, CardActions, Button
 } from '@mui/material';
 import { FC } from 'react';
+import { todoItemProps } from '../../../types/componentsType/componentsType';
 
-export type todoItemProps = {
-  title: string;
-  id: number;
-  date: string;
-  admin: string;
-  comments: number;
-};
 const TodoItem: FC<todoItemProps> = ({
-  title, id, date, admin, comments,
+  issue,
+  onDragOver,
+  onDragLeave,
+  onDragStart,
+  onDragEnd,
+  onDrop,
+  board,
 }) => {
+  const {
+    created_at, title, id, user, comments,
+  } = issue;
   const currentTime = new Date();
-  const postTime = new Date(date);
+  const postTime = new Date(created_at);
   const timeDiff = currentTime.getTime() - postTime.getTime();
   const diffInMin = Math.round(timeDiff / 60000);
   const diffInHrs = Math.round(timeDiff / 3600000);
@@ -32,7 +36,15 @@ const TodoItem: FC<todoItemProps> = ({
     timeAgo = 'just now';
   }
   return (
-    <Card sx={{ minWidth: 275 }}>
+    <Card
+      sx={{ minWidth: 275, cursor: 'pointer' }}
+      draggable
+      onDragOver={(e) => { onDragOver(e); }}
+      onDragLeave={(e) => { onDragLeave(e); }}
+      onDragStart={(e) => { onDragStart(e, board, issue); }}
+      onDragEnd={(e) => { onDragEnd(e); }}
+      onDrop={(e) => { onDrop(e, board, issue); }}
+    >
       <CardContent>
         <Typography variant="h5" component="div">
           {title}
@@ -42,7 +54,7 @@ const TodoItem: FC<todoItemProps> = ({
         </Typography>
 
         <Typography variant="body2">
-          {`${admin} | Comments: ${comments}`}
+          {`${user.type} | Comments: ${comments}`}
         </Typography>
       </CardContent>
     </Card>
