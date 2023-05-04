@@ -35,6 +35,7 @@ module.exports = {
     'jest',
   ],
   rules: {
+    'import/prefer-default-export': 'off',
     'react/function-component-definition': [
       2,
       {

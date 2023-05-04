@@ -5,22 +5,12 @@ import {
 import {
   repoReducerActions
 } from '../../types/store/actions/actionsType';
+import { RepoReducerPayload } from '../../types/store/reducersTypes/reducersType';
 import {
   initialRepoType
 } from '../../types/store/reducersTypes/repoReducerTypes';
 import saveIssuesToLocalStorage from '../../utils/saveToLocalStorage';
 import initialRepoState from '../initialState/repoInitialState';
-
-interface RepoReducerPayload {
-  repoUrl: string;
-  issues: issuesResponseType[];
-  changeTodoStatus?: {
-    fromBoard: todoStatus;
-    fromTodo: issuesResponseType;
-    toBoard: todoStatus;
-    toTodo?: issuesResponseType;
-  };
-}
 
 const repoReducer = (
   state: initialRepoType = initialRepoState,
