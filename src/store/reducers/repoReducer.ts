@@ -1,26 +1,35 @@
 import {
-  todoStatus, issuesResponseType, localStorageIssue
+  todoStatus,
+  issuesResponseType
 } from '../../types/reponseType/responseType';
-import { repoReducerActions } from '../../types/store/actions/actionsType';
-import { initialRepoType, todoType } from '../../types/store/reducersTypes/repoReducerTypes';
+import {
+  repoReducerActions
+} from '../../types/store/actions/actionsType';
+import {
+  initialRepoType
+} from '../../types/store/reducersTypes/repoReducerTypes';
 import saveIssuesToLocalStorage from '../../utils/saveToLocalStorage';
 import initialRepoState from '../initialState/repoInitialState';
 
-const repoReducer = (state: initialRepoType = initialRepoState, action: {
-  type: repoReducerActions; payload: {
-    repoUrl: string;
-    issues: issuesResponseType[];
-    changeTodoStatus?: {
-      fromBoard: todoStatus;
-      fromTodo: issuesResponseType;
-      toBoard: todoStatus;
-      toTodo?: issuesResponseType;
-    };
+interface RepoReducerPayload {
+  repoUrl: string;
+  issues: issuesResponseType[];
+  changeTodoStatus?: {
+    fromBoard: todoStatus;
+    fromTodo: issuesResponseType;
+    toBoard: todoStatus;
+    toTodo?: issuesResponseType;
   };
-}) => {
+}
+
+const repoReducer = (
+  state: initialRepoType = initialRepoState,
+  action: { type: repoReducerActions; payload: RepoReducerPayload }
+) => {
   switch (action.type) {
     case repoReducerActions.SET_SEARCH: {
       const { payload } = action;
+
       const issuesByStatus = payload.issues.reduce((result, issue) => {
         result[issue.status].push(issue);
         return result;
@@ -30,116 +39,55 @@ const repoReducer = (state: initialRepoType = initialRepoState, action: {
         [todoStatus.IN_PROGRESS]: [] as issuesResponseType[],
       });
 
-      return {
-        repoUrl: payload.repoUrl,
-        issues: [
-          { todoStatus: todoStatus.TODO, issues: issuesByStatus[todoStatus.TODO] },
-          { todoStatus: todoStatus.DONE, issues: issuesByStatus[todoStatus.DONE] },
-          { todoStatus: todoStatus.IN_PROGRESS, issues: issuesByStatus[todoStatus.IN_PROGRESS] },
-        ],
-      };
+      const issues = [
+        { todoStatus: todoStatus.TODO, issues: issuesByStatus[todoStatus.TODO] },
+        { todoStatus: todoStatus.DONE, issues: issuesByStatus[todoStatus.DONE] },
+        { todoStatus: todoStatus.IN_PROGRESS, issues: issuesByStatus[todoStatus.IN_PROGRESS] },
+      ];
+
+      return { ...state, repoUrl: payload.repoUrl, issues };
     }
     case repoReducerActions.MOVE_TODO: {
       const { changeTodoStatus } = action.payload;
-      if (changeTodoStatus) {
-        if (changeTodoStatus.toTodo) {
-          const thirdArray = state.issues
-            .filter((item) => item.todoStatus !== changeTodoStatus.fromBoard
-              && item.todoStatus !== changeTodoStatus.toBoard);
-          const fromBoard = state.issues
-            .find((issue) => issue.todoStatus === changeTodoStatus.fromBoard) as todoType;
-          const toBoard = state.issues
-            .find((issue) => issue.todoStatus === changeTodoStatus.toBoard) as todoType;
+      if (!changeTodoStatus) return state;
 
-          const fromBoardIndex = fromBoard?.issues.indexOf(changeTodoStatus.fromTodo);
-          if ((fromBoardIndex || fromBoardIndex === 0) && fromBoardIndex !== -1) {
-            fromBoard?.issues.splice(fromBoardIndex, 1);
-          }
+      const {
+        fromBoard, fromTodo, toBoard, toTodo,
+      } = changeTodoStatus;
+      const thirdArray = state.issues
+        .filter((item) => item.todoStatus !== fromBoard && item.todoStatus !== toBoard);
 
-          const toBoardIndex = toBoard?.issues.indexOf(changeTodoStatus.toTodo);
-          if (toBoardIndex && toBoardIndex !== -1) {
-            toBoard?.issues.splice(toBoardIndex + 1, 0, changeTodoStatus.fromTodo);
-          }
+      const fromBoardIssues = state.issues.find((issue) => issue.todoStatus === fromBoard)?.issues;
+      const toBoardIssues = state.issues.find((issue) => issue.todoStatus === toBoard)?.issues;
 
-          if (fromBoard === toBoard) {
-            saveIssuesToLocalStorage([
-              { todoStatus: changeTodoStatus.toBoard, issues: [...toBoard.issues] },
-              ...thirdArray,
-            ]);
+      if (!fromBoardIssues || !toBoardIssues) return state;
 
-            return {
-              repoUrl: state.repoUrl,
-              issues: [
-                { todoStatus: changeTodoStatus.toBoard, issues: [...toBoard.issues] },
-                ...thirdArray,
-              ],
-            };
-          }
-          saveIssuesToLocalStorage([
-            { todoStatus: changeTodoStatus.fromBoard, issues: [...fromBoard.issues] },
-            { todoStatus: changeTodoStatus.toBoard, issues: [...toBoard.issues] },
-            ...thirdArray,
-          ]);
-          return {
-            repoUrl: state.repoUrl,
-            issues: [
-              { todoStatus: changeTodoStatus.fromBoard, issues: [...fromBoard.issues] },
-              { todoStatus: changeTodoStatus.toBoard, issues: [...toBoard.issues] },
-              ...thirdArray,
-            ],
-          };
-        }
-        if (!changeTodoStatus.toTodo) {
-          const thirdArray = state.issues
-            .filter((item) => item.todoStatus !== changeTodoStatus.fromBoard
-              && item.todoStatus !== changeTodoStatus.toBoard);
-          const fromBoard = state.issues
-            .find((issue) => issue.todoStatus === changeTodoStatus.fromBoard) as todoType;
-          const toBoard = state.issues
-            .find((issue) => issue.todoStatus === changeTodoStatus.toBoard) as todoType;
+      const fromBoardIndex = fromBoardIssues.indexOf(fromTodo);
+      if (fromBoardIndex === -1) return state;
 
-          const fromBoardIndex = fromBoard?.issues.indexOf(changeTodoStatus.fromTodo);
+      fromBoardIssues.splice(fromBoardIndex, 1);
 
-          if ((fromBoardIndex || fromBoardIndex === 0) && fromBoardIndex !== -1) {
-            fromBoard?.issues.splice(fromBoardIndex, 1);
-          }
+      if (toTodo) {
+        const toBoardIndex = toBoardIssues.indexOf(toTodo);
+        if (toBoardIndex === -1) return state;
 
-          toBoard?.issues.push(changeTodoStatus.fromTodo);
-          if (fromBoard === toBoard) {
-            saveIssuesToLocalStorage([
-              { todoStatus: changeTodoStatus.toBoard, issues: [...toBoard.issues] },
-              ...thirdArray,
-            ]);
-            saveIssuesToLocalStorage([
-              { todoStatus: changeTodoStatus.toBoard, issues: [...toBoard.issues] },
-              ...thirdArray,
-            ]);
-            return {
-              repoUrl: state.repoUrl,
-              issues: [
-                { todoStatus: changeTodoStatus.toBoard, issues: [...toBoard.issues] },
-                ...thirdArray,
-              ],
-            };
-          }
-          saveIssuesToLocalStorage([
-            { todoStatus: changeTodoStatus.fromBoard, issues: [...fromBoard.issues] },
-            { todoStatus: changeTodoStatus.toBoard, issues: [...toBoard.issues] },
-            ...thirdArray,
-          ]);
-          return {
-            repoUrl: state.repoUrl,
-            issues: [
-              { todoStatus: changeTodoStatus.fromBoard, issues: [...fromBoard.issues] },
-              { todoStatus: changeTodoStatus.toBoard, issues: [...toBoard.issues] },
-              ...thirdArray,
-            ],
-          };
-        }
+        toBoardIssues.splice(toBoardIndex + 1, 0, fromTodo);
+      } else {
+        toBoardIssues.push(fromTodo);
       }
-      return state;
+
+      const issues = [
+        { todoStatus: fromBoard, issues: [...fromBoardIssues] },
+        { todoStatus: toBoard, issues: [...toBoardIssues] },
+        ...thirdArray,
+      ];
+
+      saveIssuesToLocalStorage(issues, action.payload.repoUrl);
+
+      return { ...state, issues };
     }
-    default: return state;
+    default:
+      return state;
   }
 };
 export default repoReducer;

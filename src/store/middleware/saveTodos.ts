@@ -1,5 +1,5 @@
 import { Dispatch } from 'redux';
-import { issuesResponseType, localStorageIssue, todoStatus } from '../../types/reponseType/responseType';
+import { issuesResponseType, todoStatus } from '../../types/reponseType/responseType';
 import { repoReducerActions } from '../../types/store/actions/actionsType';
 import { initialRepoType } from '../../types/store/reducersTypes/repoReducerTypes';
 
@@ -15,7 +15,6 @@ const saveTodos = (store: initialRepoType) => (next: Dispatch) => (action: {
     };
   };
 }) => {
-  // save todos to local storage
   const savedIssues = localStorage.getItem('issues');
   let resultArray: issuesResponseType[] | undefined;
   if (!action.payload.changeTodoStatus) {

@@ -1,13 +1,19 @@
 .todo {
   display: flex;
-  justify-content: space-between
-}
+  justify-content: space-between;
 
-.board {
-  display: flex;
-  flex-direction: column;
-  width: 300px;
-  gap: 10px;
-  padding: 5px;
-  border: 1px solid black;
+  .board {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6510416666666666vw;
+    width: 33%;
+    margin: 0vw 0.6510416666666666vw;
+    border: 1px solid white;
+    background: #878787;
+    padding: 0.6510416666666666vw;
+
+    .board-wrapper {
+      text-align: center;
+    }
+  }
 }

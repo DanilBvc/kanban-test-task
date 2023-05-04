@@ -1,4 +1,4 @@
-import { issuesResponseType, todoStatus } from '../../types/reponseType/responseType';
+import { todoStatus } from '../../types/reponseType/responseType';
 import { initialRepoType } from '../../types/store/reducersTypes/repoReducerTypes';
 
 const initialRepoState: initialRepoType = {

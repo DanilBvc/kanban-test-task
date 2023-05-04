@@ -1,4 +1,4 @@
-import { issuesResponseType, todoStatus } from '../../../types/reponseType/responseType';
+import { issuesResponseType } from '../../../types/reponseType/responseType';
 import { repoReducerActions } from '../../../types/store/actions/actionsType';
 
 const setSearch = (payload: {
