@@ -16,12 +16,13 @@ const saveTodos = (store: initialRepoType) => (next: Dispatch) => (action: {
   };
 }) => {
   // save todos to local storage
-  const savedIssues = localStorage.getItem('issues') as localStorageIssue[] | null;
+  const savedIssues = localStorage.getItem('issues');
   let resultArray: issuesResponseType[] | undefined;
   if (!action.payload.changeTodoStatus) {
     if (savedIssues) {
       resultArray = action.payload.issues.map((issue) => {
-        const statusObj = savedIssues.find((s) => s.id === issue.id);
+        const statusObj = JSON.parse(savedIssues)
+          .find((s: issuesResponseType) => s.id === issue.id);
         if (statusObj) {
           return { ...issue, status: statusObj.issueStatus };
         }

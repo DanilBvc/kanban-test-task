@@ -1,6 +1,9 @@
-import { todoStatus, issuesResponseType, localStorageIssue } from '../../types/reponseType/responseType';
+import {
+  todoStatus, issuesResponseType, localStorageIssue
+} from '../../types/reponseType/responseType';
 import { repoReducerActions } from '../../types/store/actions/actionsType';
 import { initialRepoType, todoType } from '../../types/store/reducersTypes/repoReducerTypes';
+import saveIssuesToLocalStorage from '../../utils/saveToLocalStorage';
 import initialRepoState from '../initialState/repoInitialState';
 
 const repoReducer = (state: initialRepoType = initialRepoState, action: {
@@ -39,34 +42,6 @@ const repoReducer = (state: initialRepoType = initialRepoState, action: {
     case repoReducerActions.MOVE_TODO: {
       const { changeTodoStatus } = action.payload;
       if (changeTodoStatus) {
-        const localStorageIssues = localStorage.getItem('issues') as localStorageIssue[] | null;
-        if (localStorageIssues && localStorageIssues.length > 0) {
-          const updatedIssues = localStorageIssues.map((item) => {
-            if (item.id === changeTodoStatus.fromTodo.id) {
-              return { ...item, issueStatus: changeTodoStatus.toBoard };
-            }
-            if (item.id === changeTodoStatus.toTodo?.id) {
-              return { ...item, issueStatus: changeTodoStatus.fromBoard };
-            }
-            return item;
-          });
-          localStorage.setItem('issues', JSON.stringify(updatedIssues));
-        } else {
-          const updatedIssues: localStorageIssue[] = [];
-
-          if (changeTodoStatus.fromBoard !== todoStatus.TODO) {
-            updatedIssues.push(
-              { id: changeTodoStatus.fromTodo.id, issueStatus: changeTodoStatus.fromBoard }
-            );
-          }
-          if (changeTodoStatus.toBoard !== todoStatus.TODO && changeTodoStatus.toTodo) {
-            // here bug
-            updatedIssues.push(
-              { id: changeTodoStatus.toTodo.id, issueStatus: changeTodoStatus.toBoard }
-            );
-          }
-          localStorage.setItem('issues', JSON.stringify(updatedIssues));
-        }
         if (changeTodoStatus.toTodo) {
           const thirdArray = state.issues
             .filter((item) => item.todoStatus !== changeTodoStatus.fromBoard
@@ -87,6 +62,11 @@ const repoReducer = (state: initialRepoType = initialRepoState, action: {
           }
 
           if (fromBoard === toBoard) {
+            saveIssuesToLocalStorage([
+              { todoStatus: changeTodoStatus.toBoard, issues: [...toBoard.issues] },
+              ...thirdArray,
+            ]);
+
             return {
               repoUrl: state.repoUrl,
               issues: [
@@ -95,6 +75,11 @@ const repoReducer = (state: initialRepoType = initialRepoState, action: {
               ],
             };
           }
+          saveIssuesToLocalStorage([
+            { todoStatus: changeTodoStatus.fromBoard, issues: [...fromBoard.issues] },
+            { todoStatus: changeTodoStatus.toBoard, issues: [...toBoard.issues] },
+            ...thirdArray,
+          ]);
           return {
             repoUrl: state.repoUrl,
             issues: [
@@ -121,6 +106,14 @@ const repoReducer = (state: initialRepoType = initialRepoState, action: {
 
           toBoard?.issues.push(changeTodoStatus.fromTodo);
           if (fromBoard === toBoard) {
+            saveIssuesToLocalStorage([
+              { todoStatus: changeTodoStatus.toBoard, issues: [...toBoard.issues] },
+              ...thirdArray,
+            ]);
+            saveIssuesToLocalStorage([
+              { todoStatus: changeTodoStatus.toBoard, issues: [...toBoard.issues] },
+              ...thirdArray,
+            ]);
             return {
               repoUrl: state.repoUrl,
               issues: [
@@ -129,6 +122,11 @@ const repoReducer = (state: initialRepoType = initialRepoState, action: {
               ],
             };
           }
+          saveIssuesToLocalStorage([
+            { todoStatus: changeTodoStatus.fromBoard, issues: [...fromBoard.issues] },
+            { todoStatus: changeTodoStatus.toBoard, issues: [...toBoard.issues] },
+            ...thirdArray,
+          ]);
           return {
             repoUrl: state.repoUrl,
             issues: [
